@@ -20,6 +20,12 @@ class CharacterTableViewCell: UITableViewCell {
     
     @IBOutlet weak var nameLabel: UILabel!
     
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        
+        characterImageView?.image = nil
+    }
+    
     func configureCell(use character: Character) {
         nameLabel.text = character.name
         characterImageView.fetchImage(url: character.thumbnail?.url)
