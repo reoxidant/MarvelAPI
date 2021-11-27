@@ -7,6 +7,14 @@
 
 import Foundation
 
+struct CharacterDataWrapper: Decodable {
+    let data: CharacterDataContainer?
+}
+
+struct CharacterDataContainer: Decodable {
+    let results: [Character]?
+}
+
 struct Character: Decodable {
     let name: String?
     let description: String?
@@ -15,10 +23,12 @@ struct Character: Decodable {
     let comics: ComicList?
 }
 
-struct CharacterDataContainer: Decodable {
-    let results: [Character]?
+struct CharacterList: Decodable {
+    let items: [CharacterSummary]?
 }
 
-struct CharacterDataWrapper: Decodable {
-    let data: CharacterDataContainer?
+struct CharacterSummary: Decodable {
+    let resourceURI: String?
+    let name: String?
+    let role: String?
 }

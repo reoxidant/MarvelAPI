@@ -1,5 +1,5 @@
 //
-//  CharactersViewController.swift
+//  CharactersTableViewController.swift
 //  MarvelAPI
 //
 //  Created by Виталий Шаповалов on 25.11.2021.
@@ -8,12 +8,29 @@
 import UIKit
 import Network
 
-class CharactersViewController: UIViewController {
+class CharactersTableViewController: UITableViewController {
     
     @IBOutlet weak var prevPageBarButton: UIBarButtonItem!
     @IBOutlet weak var nextPageBarButton: UIBarButtonItem!
     
-    @IBOutlet weak var tableView: UITableView!
+    @IBAction func managePageData(_ sender: UIBarButtonItem) {
+        switch sender.tag {
+        case 0:
+            if currentPage == 0 { return }
+            currentPage -= 1
+        case 1:
+            currentPage = currentPage + 1
+        default:
+            break
+        }
+    }
+    
+    private var currentPage: Int = 0 {
+        didSet {
+            let url = MarvelAPI.shared.getCharactersURL(page: currentPage, limit: 50)
+            setupCharacters(with: url)
+        }
+    }
     
     private var characters: [Character] = []
     private var filteredCharacters: [Character] = []
@@ -47,27 +64,48 @@ class CharactersViewController: UIViewController {
         setupNavigationBar()
         setupSearchController()
         checkInternetConnection()
-        setupCharacters()
+        setupCharacters(with: MarvelAPI.shared.getCharactersURL())
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        
-        if let characterDetailVC = segue.destination as? CharacterDetailViewController, let indexPath = tableView.indexPathForSelectedRow {
+        if let characterDetailsVC = segue.destination as? CharacterDetailsViewController, let indexPath = tableView.indexPathForSelectedRow {
             let character = searchBarIsActive ? filteredCharacters[indexPath.row] : characters[indexPath.row]
-            characterDetailVC.characterResourceURI = character.resourceURI
+            characterDetailsVC.characterResourceURI = character.resourceURI
         }
+    }
+    
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return searchBarIsActive ? filteredCharacters.count : characters.count
+    }
+    
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: "characterCell", for: indexPath) as? CharacterTableViewCell else { return UITableViewCell() }
+        
+        let redBackgroundView = UIView()
+        redBackgroundView.backgroundColor = UIColor(red: 230 / 255, green: 36 / 255, blue: 41 / 255, alpha: 1)
+        cell.selectedBackgroundView = redBackgroundView
+        
+        let character = searchBarIsActive ? filteredCharacters[indexPath.row] : characters[indexPath.row]
+        
+        cell.configureCell(use: character)
+        
+        return cell
+    }
+    
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
     }
 }
 
-extension CharactersViewController {
+extension CharactersTableViewController {
     private func setupNavigationBar() {
         title = "Marvel Characters"
         
-        // Navigation var appearance
         if #available(iOS 13.0, *) {
             let navBarAppearance = UINavigationBarAppearance()
             navBarAppearance.configureWithOpaqueBackground()
-            navBarAppearance.backgroundColor = UIColor.separator
+            navBarAppearance.backgroundColor = UIColor(red: 32 / 255, green: 32 / 255, blue: 32 / 255, alpha: 1)
             navBarAppearance.titleTextAttributes = [.foregroundColor: UIColor.white]
             navBarAppearance.largeTitleTextAttributes = [.foregroundColor: UIColor.white]
             
@@ -102,10 +140,8 @@ extension CharactersViewController {
         }
     }
     
-    private func setupCharacters() {
-        let url = MarvelAPI.shared.getCharactersURL()
-        print(url)
-        NetworkManager.shared.fetchCharacters(from: url, complection: { [weak self] result in
+    private func setupCharacters(with url: String) {
+        NetworkManager.shared.fetchCharacters(from: url, completion: { [weak self] result in
             switch result {
             case .success(let characters):
                 self?.characters = characters
@@ -117,28 +153,7 @@ extension CharactersViewController {
     }
 }
 
-extension CharactersViewController: UITableViewDataSource {
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return searchBarIsActive ? filteredCharacters.count : characters.count
-    }
-    
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        
-        guard let cell = tableView.dequeueReusableCell(withIdentifier: "characterCell", for: indexPath) as? CharacterTableViewCell else { return UITableViewCell() }
-        
-        let redBackgroundView = UIView()
-        redBackgroundView.backgroundColor = UIColor(red: CGFloat(230) / CGFloat(255), green: CGFloat(36) / CGFloat(255), blue: CGFloat(41) / CGFloat(255), alpha: 1)
-        cell.selectedBackgroundView = redBackgroundView
-        
-        let character = searchBarIsActive ? filteredCharacters[indexPath.row] : characters[indexPath.row]
-        
-        cell.configureCell(use: character)
-        
-        return cell
-    }
-}
-
-extension CharactersViewController: UISearchResultsUpdating {
+extension CharactersTableViewController: UISearchResultsUpdating {
     func updateSearchResults(for searchController: UISearchController) {
         guard let searchText = searchController.searchBar.text else { return }
         filteredCharacters = characters.filter({ $0.name?.lowercased().contains(searchText.lowercased()) ?? false })

@@ -7,21 +7,28 @@
 
 import Foundation
 
+struct ComicDataWrapper: Decodable {
+    let data: ComicDataContainer?
+}
+
+struct ComicDataContainer: Decodable {
+    let results: [Comic]?
+}
+
 struct Comic: Decodable {
     let title: String?
     let description: String?
-    let dates: [ComicDate]?
-    let prices: [ComicPrice]?
-}
-
-struct ComicDate: Decodable {
-    let type: String?
-    let date: Date?
-}
-
-struct ComicPrice: Decodable {
-    let type: String?
-    let price: Float?
+    let characters: CharacterList?
+    
+    var fullDescription: String {
+        guard let description = description, !description.isEmpty else { return "Not found description" }
+        
+        return """
+        Description:
+        
+        \(description)
+        """
+    }
 }
 
 struct ComicList: Decodable {

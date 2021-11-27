@@ -25,12 +25,12 @@ struct MarvelAPI {
         return "ts=\(ts)&apikey=\(API.publicKey.rawValue)&hash=\(hash)"
     }
     
-    func getCharactersURL(by page: Int = 0, and limit: Int = 50) -> String {
+    func getCharactersURL(page: Int = 0, limit: Int = 50) -> String {
         let offset = page * limit
         return API.baseUrl.rawValue + "/characters?offset=\(offset)&limit=\(limit)&" + getCreditals()
     }
     
-    func getCharacterURL(resourceURI: String) -> String {
-        return resourceURI + "?" + getCreditals()
+    func getFullURLBy(resourceURI: String) -> String {
+        resourceURI + "?" + getCreditals()
     }
 }
