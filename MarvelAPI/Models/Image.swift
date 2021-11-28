@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct Image: Decodable {
+struct Image: Codable {
     let path: String?
     let imageExtension: String?
     

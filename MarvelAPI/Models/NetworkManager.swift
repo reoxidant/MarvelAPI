@@ -7,6 +7,7 @@
 
 import Foundation
 import UIKit
+import Alamofire
 
 class NetworkManager {
     
@@ -17,7 +18,7 @@ class NetworkManager {
         guard let url = URL(string: url) else { return }
         
         URLSession.shared.dataTask(with: url) { data, response, error in
-             
+            
             var result: Result<[Character], Error>
             
             defer {
@@ -43,6 +44,109 @@ class NetworkManager {
         }.resume()
     }
     
+    func pushPostRequestWithDictionary(from url: String, completion: @escaping (Result<Character?, Error>) -> Void) {
+        
+        guard let url = URL(string: url) else { return }
+        
+        let character: [String : Any] = [
+            "name": "Masha Sokolova",
+            "description": "Masha has lived all her life in a parasha village with her drunken parents, she has a brother who is a complete fucker, she decided to leave her parents to get a home for herself, for this she used her ability to borrow, took 5 years of fucking loans and began to live unhappily",
+            "thumbnail": ["path": "", "extension": ""],
+            "resourceURI": "",
+            "comics": ["items":["resourceURI": "", "name": ""]]
+        ]
+        
+        do {
+            let data = try JSONSerialization.data(withJSONObject: character, options: [])
+            
+            var request = URLRequest(url: url)
+            request.addValue("aplication/json", forHTTPHeaderField: "Content-Type")
+            request.httpMethod = "POST"
+            request.httpBody = data
+            
+            URLSession.shared.dataTask(with: request) { data, response, error in
+                
+                var result: Result<Character?, Error>
+                
+                defer {
+                    DispatchQueue.main.async {
+                        completion(result)
+                    }
+                }
+                
+                if let error = error {
+                    result = .failure(error)
+                    return
+                }
+                
+                guard let data = data else {
+                    result = .success(nil)
+                    return
+                }
+                
+                do {
+                    let value = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
+                    result = .success(Character.getCharacter(from: value))
+                }
+                catch let error {
+                    result = .failure(error)
+                }
+                
+            }.resume()
+        }
+        catch let error {
+            print(error)
+        }
+    }
+    
+    func pushPostRequestWithModel(from url: String, completion: @escaping (Result<Character?, Error>) -> Void) {
+        guard let url = URL(string: url) else { return }
+        
+        let character = Character(name: "Masha Sokolova", description: "Masha has lived all her life in a parasha village with her drunken parents, she has a brother who is a complete fucker, she decided to leave her parents to get a home for herself, for this she used her ability to borrow, took 5 years of fucking loans and began to live unhappily", thumbnail: Image(path: "", imageExtension: ""), resourceURI: "", comics: ComicList(items: nil))
+        
+        do {
+            let data = try JSONEncoder().encode(character)
+            
+            var request = URLRequest(url: url)
+            request.addValue("aplication/json", forHTTPHeaderField: "Content-Type")
+            request.httpMethod = "POST"
+            request.httpBody = data
+            
+            URLSession.shared.dataTask(with: request) { data, response, error in
+                
+                var result: Result<Character?, Error>
+                
+                defer {
+                    DispatchQueue.main.async {
+                        completion(result)
+                    }
+                }
+                
+                if let error = error {
+                    result = .failure(error)
+                    return
+                }
+                
+                guard let data = data else {
+                    result = .success(nil)
+                    return
+                }
+                
+                do {
+                    let character = try JSONDecoder().decode(Character.self, from: data)
+                    result = .success(character)
+                }
+                catch let error {
+                    result = .failure(error)
+                }
+                
+            }.resume()
+        }
+        catch let error {
+            print(error)
+        }
+    }
+    
     func fetchCharacter(from url: String, completion: @escaping (Result<Character?, Error>) -> Void) {
         
         guard let url = URL(string: url) else { return }
@@ -65,7 +169,7 @@ class NetworkManager {
                 result = .success(nil)
                 return
             }
-                    
+            
             do {
                 let container = try JSONDecoder().decode(CharacterDataWrapper.self, from: data)
                 result = .success(container.data?.results?.first)
@@ -101,7 +205,7 @@ class NetworkManager {
                 result = .success(nil)
                 return
             }
-                    
+            
             do {
                 let container = try JSONDecoder().decode(ComicDataWrapper.self, from: data)
                 result = .success(container.data?.results?.first)

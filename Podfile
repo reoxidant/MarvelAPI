@@ -7,5 +7,5 @@ target 'MarvelAPI' do
 
   # Pods for MarvelAPI
 pod 'SwiftHash'
-
+pod 'Alamofire', '~> 5.4'
 end
