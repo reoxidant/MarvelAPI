@@ -15,12 +15,40 @@ struct CharacterDataContainer: Decodable {
     let results: [Character]?
 }
 
-struct Character: Decodable {
+struct Character: Codable {
     let name: String?
     let description: String?
     let thumbnail: Image?
     let resourceURI: String?
     let comics: ComicList?
+    
+    init(name: String, description: String, thumbnail: Image, resourceURI: String, comics: ComicList) {
+        self.name = name
+        self.description = description
+        self.thumbnail = thumbnail
+        self.resourceURI = resourceURI
+        self.comics = comics
+    }
+    
+    init?(json: [String: Any]) {
+        name = json["name"] as? String
+        description = json["description"] as? String
+        thumbnail = json["thumbnail"] as? Image
+        resourceURI = json["resourceURI"] as? String
+        comics = json["comics"] as? ComicList
+    }
+    
+    static func getCharacter(from value:[String: Any]?) -> Character? {
+        guard let value = value else { return nil }
+        return Character(json: value)
+    }
+    
+    static func getCharacters(from values: [[String: Any]]?) -> [Character] {
+        guard let values = values else {
+            return [Character]()
+        }
+        return values.compactMap({ Character.init(json: $0) })
+    }
 }
 
 struct CharacterList: Decodable {

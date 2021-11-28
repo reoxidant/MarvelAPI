@@ -31,11 +31,11 @@ struct Comic: Decodable {
     }
 }
 
-struct ComicList: Decodable {
+struct ComicList: Codable {
     let items: [ComicSummary]?
 }
 
-struct ComicSummary: Decodable {
+struct ComicSummary: Codable {
     let resourceURI: String?
     let name: String?
 }
