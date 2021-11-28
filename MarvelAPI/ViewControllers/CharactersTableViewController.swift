@@ -63,7 +63,7 @@ class CharactersTableViewController: UITableViewController {
         
         setupNavigationBar()
         setupSearchController()
-        checkInternetConnection()
+        monitorInternetConnection()
         setupCharacters(with: MarvelAPI.shared.getCharactersURL())
     }
     
@@ -131,16 +131,21 @@ extension CharactersTableViewController {
         present(alert, animated: true)
     }
     
-    private func checkInternetConnection() {
+    private func monitorInternetConnection() {
         let monitor = NWPathMonitor()
         monitor.pathUpdateHandler = { [weak self] path in
             if path.status != .satisfied {
-                self?.showAlert(title: "Error:", message: "Failed Interner Connection!")
+                DispatchQueue.main.async {
+                    self?.showAlert(title: "Error:", message: "Failed Interner Connection!")
+                }
             }
         }
+        let queue = DispatchQueue(label: "Monitor")
+        monitor.start(queue: queue)
     }
     
     private func setupCharacters(with url: String) {
+        
         NetworkManager.shared.fetchCharacters(from: url, completion: { [weak self] result in
             switch result {
             case .success(let characters):
@@ -150,6 +155,32 @@ extension CharactersTableViewController {
                 print(error.localizedDescription)
             }
         })
+        
+        // POST is not allowed
+        
+//        NetworkManager.shared.pushPostRequestWithDictionary(from: url) { [weak self] result in
+//            switch result {
+//            case .success(let character):
+//                guard let character = character else { return }
+//                self?.characters.append(character)
+//                self?.tableView.reloadData()
+//            case .failure(let error):
+//                print(error.localizedDescription)
+//            }
+//        }
+        
+        // POST is not allowed
+        
+//        NetworkManager.shared.pushPostRequestWithModel(from: url) { [weak self] result in
+//            switch result {
+//            case .success(let character):
+//                guard let character = character else { return }
+//                self?.characters.append(character)
+//                self?.tableView.reloadData()
+//            case .failure(let error):
+//                print(error.localizedDescription)
+//            }
+//        }
     }
 }
 
