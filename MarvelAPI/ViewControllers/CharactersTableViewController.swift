@@ -146,7 +146,17 @@ extension CharactersTableViewController {
     
     private func setupCharacters(with url: String) {
         
-        NetworkManager.shared.fetchCharacters(from: url, completion: { [weak self] result in
+        //        NetworkManager.shared.fetchCharacters(from: url, completion: { [weak self] result in
+        //            switch result {
+        //            case .success(let characters):
+        //                self?.characters = characters
+        //                self?.tableView.reloadData()
+        //            case .failure(let error):
+        //                print(error.localizedDescription)
+        //            }
+        //        })
+        
+        NetworkManager.shared.fetchAlamofireCharacters(from: url, completion: { [weak self] result in
             switch result {
             case .success(let characters):
                 self?.characters = characters
@@ -158,29 +168,42 @@ extension CharactersTableViewController {
         
         // POST is not allowed
         
-//        NetworkManager.shared.pushPostRequestWithDictionary(from: url) { [weak self] result in
-//            switch result {
-//            case .success(let character):
-//                guard let character = character else { return }
-//                self?.characters.append(character)
-//                self?.tableView.reloadData()
-//            case .failure(let error):
-//                print(error.localizedDescription)
-//            }
-//        }
+        NetworkManager.shared.pushAlamofirePostRequestWithDictionary(from: url) { [weak self] result in
+            switch result {
+            case .success(let character):
+                guard let character = character else { return }
+                self?.characters.append(character)
+                self?.tableView.reloadData()
+            case .failure(let error):
+                print(error.localizedDescription)
+            }
+        }
         
         // POST is not allowed
         
-//        NetworkManager.shared.pushPostRequestWithModel(from: url) { [weak self] result in
-//            switch result {
-//            case .success(let character):
-//                guard let character = character else { return }
-//                self?.characters.append(character)
-//                self?.tableView.reloadData()
-//            case .failure(let error):
-//                print(error.localizedDescription)
-//            }
-//        }
+        //        NetworkManager.shared.pushPostRequestWithDictionary(from: url) { [weak self] result in
+        //            switch result {
+        //            case .success(let character):
+        //                guard let character = character else { return }
+        //                self?.characters.append(character)
+        //                self?.tableView.reloadData()
+        //            case .failure(let error):
+        //                print(error.localizedDescription)
+        //            }
+        //        }
+        
+        // POST is not allowed
+        
+        //        NetworkManager.shared.pushPostRequestWithModel(from: url) { [weak self] result in
+        //            switch result {
+        //            case .success(let character):
+        //                guard let character = character else { return }
+        //                self?.characters.append(character)
+        //                self?.tableView.reloadData()
+        //            case .failure(let error):
+        //                print(error.localizedDescription)
+        //            }
+        //        }
     }
 }
 

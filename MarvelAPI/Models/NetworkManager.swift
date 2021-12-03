@@ -44,6 +44,85 @@ class NetworkManager {
         }.resume()
     }
     
+    func fetchAlamofireCharacters(from url: String, completion: @escaping (Result<[Character], Error>) -> Void) {
+        
+        guard let url = URL(string: url) else { return }
+        
+        AF.request(url).validate().responseJSON { responseData in
+            
+            var result: Result<[Character], Error>
+            
+            defer {
+                DispatchQueue.main.async {
+                    completion(result)
+                }
+            }
+            
+            switch responseData.result {
+                
+            case .success(_):
+                guard let data = responseData.data else {
+                    result = .success([])
+                    return
+                }
+                
+                do {
+                    let container = try JSONDecoder().decode(CharacterDataWrapper.self, from: data)
+                    
+                    if let characters = container.data?.results {
+                        result = .success(characters)
+                    } else {
+                        result = .success([])
+                    }
+                }
+                catch let error {
+                    result = .failure(error)
+                }
+                
+            case .failure(let error):
+                result = .failure(error)
+            }
+        }
+    }
+    
+    func pushAlamofirePostRequestWithDictionary(from url: String, completion: @escaping (Result<Character?, Error>) -> Void) {
+        
+        guard let url = URL(string: url) else { return }
+        
+        let character: [String : Any] = [
+            "name": "Masha Sokolova",
+            "description": "Masha has lived all her life in a parasha village with her drunken parents, she has a brother who is a complete fucker, she decided to leave her parents to get a home for herself, for this she used her ability to borrow, took 5 years of fucking loans and began to live unhappily",
+            "thumbnail": ["path": "", "extension": ""],
+            "resourceURI": "",
+            "comics": ["items":["resourceURI": "", "name": ""]]
+        ]
+        
+        AF.request(url, method: .post, parameters: character).validate().responseJSON { responseData in
+            
+            var result: Result<Character?, Error>
+            
+            defer {
+                DispatchQueue.main.async {
+                    completion(result)
+                }
+            }
+            
+            switch responseData.result {
+            case .success(let value):
+                guard let jsonData = value as? [String: Any] else {
+                    result = .success(nil)
+                    return
+                }
+                
+                let character = Character.getCharacter(from: jsonData)
+                
+                result = .success(character)
+            case .failure(let error):
+                result = .failure(error)
+            }
+        }
+    }
+    
     func pushPostRequestWithDictionary(from url: String, completion: @escaping (Result<Character?, Error>) -> Void) {
         
         guard let url = URL(string: url) else { return }
@@ -85,7 +164,7 @@ class NetworkManager {
                 }
                 
                 do {
-                    let value = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
+                    let value = try JSONSerialization.jsonObject(with: data, options: [])
                     result = .success(Character.getCharacter(from: value))
                 }
                 catch let error {
