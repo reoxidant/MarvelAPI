@@ -38,16 +38,14 @@ struct Character: Codable {
         comics = json["comics"] as? ComicList
     }
     
-    static func getCharacter(from value:[String: Any]?) -> Character? {
-        guard let value = value else { return nil }
+    static func getCharacter(from value: Any) -> Character? {
+        guard let value = value as? [String: Any] else { return nil }
         return Character(json: value)
     }
     
-    static func getCharacters(from values: [[String: Any]]?) -> [Character] {
-        guard let values = values else {
-            return [Character]()
-        }
-        return values.compactMap({ Character.init(json: $0) })
+    static func getCharacters(from value: Any) -> [Character] {
+        guard let value = value as? [[String: Any]] else { return [Character]() }
+        return value.compactMap({ Character.init(json: $0) })
     }
 }
 
